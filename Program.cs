@@ -1,5 +1,4 @@
 ﻿// Avoid using COM dependencies (Not included in build!)
-using Microsoft.Office.Interop.Excel;
 using PseudoExcelReader;
 
 // Find a .txt file:
