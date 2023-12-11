@@ -28,12 +28,13 @@
                 options.AddRange(files.ToArray());
                 Console.Clear();
                 Console.WriteLine(message + "\n");
-                foreach (string option in options)
+                if (newDir)
                 {
-                    if (option == options[n]) { Console.BackgroundColor = ConsoleColor.White; Console.ForegroundColor = ConsoleColor.Black; }
-                    Console.WriteLine(option.Replace(currentDir, ""));
-                    Console.ResetColor();
-                    if (newDir == true) Thread.Sleep(2);
+                    foreach (string option in options)
+                    {
+                        Console.WriteLine(option.Replace(currentDir, ""));
+                        Thread.Sleep(2);
+                    }
                 }
                 newDir = false;
                 ConsoleKey input = Console.ReadKey().Key;
