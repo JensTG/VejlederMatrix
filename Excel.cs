@@ -4,40 +4,50 @@
     {
         public static string SelectFile(string currentDir, string message, string fileType = ".txt")
         {
+            // Declare some variables to use later:
             List<string> previousDir = new List<string>();
             List<string> options = new List<string>();
-            int n = 0;
-            string path;
+            int n = 0;      // Will keep track of the selected option
+            int prevN = 0;  // And will be used to erase highlights
+            string path;    // The final result
             Console.CursorVisible = false;
             bool newDir = true;
             while (true)
             {
-                List<string> dirs = Directory.GetDirectories(currentDir).ToList();
-                List<string> files = Directory.GetFiles(currentDir).ToList();
-                List<string> remove = new List<string>();
-                foreach(string file in files)
+                if (newDir)                
                 {
-                    if (!file.Contains(fileType)) remove.Add(file);
-                }
-                foreach(string item in remove)
-                {
-                    files.Remove(item);
-                }
-                options.Clear();
-                options.AddRange(dirs.ToArray());
-                options.AddRange(files.ToArray());
-                Console.Clear();
-                Console.WriteLine(message + "\n");
-                if (newDir)
-                {
+                    List<string> dirs = Directory.GetDirectories(currentDir).ToList();
+                    List<string> files = Directory.GetFiles(currentDir).ToList();
+                    List<string> remove = new List<string>();
+                    foreach (string file in files)
+                    {
+                        if (!file.Contains(fileType)) remove.Add(file);
+                    }
+                    foreach (string item in remove)
+                    {
+                        files.Remove(item);
+                    }
+                    options.Clear();
+                    options.AddRange(dirs.ToArray());
+                    options.AddRange(files.ToArray());
+
+                    // Write options to the console:
+                    Console.Clear();
+                    Console.SetCursorPosition(1, 0);
+                    Console.WriteLine(message + "\n");
                     foreach (string option in options)
                     {
                         Console.WriteLine(option.Replace(currentDir, ""));
-                        Thread.Sleep(2);
+                        Thread.Sleep(4);
                     }
-                }
+                } else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
                 newDir = false;
+
+                Highlight(n + 2, options[n].Replace(currentDir, ""));
+
+                // Get user input:
                 ConsoleKey input = Console.ReadKey().Key;
+                prevN = n;
                 switch (input)
                 {
                     case ConsoleKey.UpArrow: if (n > 0) n--; break;
@@ -71,6 +81,7 @@
                             currentDir = previousDir.Last();
                             previousDir.RemoveAt(previousDir.Count - 1);
                             n = 0;
+                            newDir = true;
                         }
                         break;
                 }
@@ -90,6 +101,15 @@
                 lærerPar.Add(new LærerPar(Int32.Parse(col[2].Trim()), col[0], col[1]));
             }
             return lærerPar;
+        }
+
+        public static void Highlight(int line, string option, ConsoleColor hColor = ConsoleColor.White, ConsoleColor tColor = ConsoleColor.Black)
+        {
+            Console.BackgroundColor = hColor;
+            Console.ForegroundColor = tColor;
+            Console.SetCursorPosition(0, line);
+            Console.Write(option);
+            Console.ResetColor();
         }
     }
 
