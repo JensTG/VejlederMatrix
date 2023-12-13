@@ -15,8 +15,8 @@ List<Dictionary<LærerPar, bool>> plan = new List<Dictionary<LærerPar, bool>>()
 // Calculate available teachers:
 foreach (LærerPar pair in pairs)
 {
-    if (tilgængeligeLærere.ContainsKey(pair.lærer1)) tilgængeligeLærere.Add(pair.lærer1, true);
-    if (tilgængeligeLærere.ContainsKey(pair.lærer2)) tilgængeligeLærere.Add(pair.lærer2, true);
+    if (!tilgængeligeLærere.ContainsKey(pair.lærer1)) tilgængeligeLærere.Add(pair.lærer1, true);
+    if (!tilgængeligeLærere.ContainsKey(pair.lærer2)) tilgængeligeLærere.Add(pair.lærer2, true);
 }
 
 // Make a plan:
@@ -77,12 +77,26 @@ string[] parts = path.Split('\\');
 string outPath = "";
 foreach(string part in parts)
 {
-    if(!part.Contains(".txt")) outPath += part;
+    if(!part.Contains(".txt")) outPath += part + "\\";
 }
-outPath += "Resultat.txt";
+
+DateTime dateMod = DateTime.Now;
+outPath += "Resultat - " + dateMod.Millisecond.ToString() + ".txt";
 
 string output = "";
+
 List<string> rows = new List<string>();
+foreach(LærerPar pair in pairs)
+{
+    string row = "";
+    for(i = 0; i < plan.Count; i++)
+    {
+        if (plan[i][pair]) row += "Optaget\t";
+        else row += "\t";
+    }
+    row += "\n";
+    rows.Add(row);
+}
 
 File.WriteAllText(outPath, output);
 
