@@ -85,17 +85,16 @@ outPath += "Resultat - " + dateMod.Millisecond.ToString() + ".txt";
 
 string output = "";
 
-List<string> rows = new List<string>();
 foreach(LærerPar pair in pairs)
 {
-    string row = "";
+    string row = pair.lærer1 + '\t' + pair.lærer2 + '\t';
     for(i = 0; i < plan.Count; i++)
     {
         if (plan[i][pair]) row += "Optaget\t";
         else row += "\t";
     }
     row += "\n";
-    rows.Add(row);
+    output += row;
 }
 
 File.WriteAllText(outPath, output);
