@@ -91,31 +91,65 @@ namespace PseudoExcelReader
             }
         }
 
-        public static string SelectSheet(ZipArchive archive)
+        public static string SelectSheet(ZipArchive archive, string message)
         {
-            string sheetID;
             List<string> IDs = new List<string>();
             List<string> names = new List<string>();
 
             foreach (ZipArchiveEntry entry in archive.Entries)
             {
-                StreamReader sr = new StreamReader(entry.Open());
-                XmlReader xr = XmlReader.Create(sr);
                 if (entry.FullName.Contains("workbook"))
                 {
+                    StreamReader sr = new StreamReader(entry.Open());
+                    XmlReader xr = XmlReader.Create(sr);
                     while (xr.Read())
                     {
-                        if (xr.Name))
+                        if (xr.Name == "sheet")
                         {
-                            raw.Add(res);
-                            if (xr.GetAttribute("t") != null) isText.Add(true);
-                            else isText.Add(false);
+                            names.Add(xr.GetAttribute("name"));
+                            IDs.Add("sheet" + xr.GetAttribute("sheetId"));
                         }
                     }
+                    xr.Close();
+                    sr.Close();
+                    break;
                 }
             }
 
-            return sheetID;
+            int n = 0;      // Will keep track of the selected option
+            int prevN = 0;  // And will be used to erase highlights
+            Console.CursorVisible = false;
+
+            // Write options to the console:
+            Console.Clear();
+            Console.SetCursorPosition(1, 0);
+            Console.WriteLine(message + "\n");
+            foreach (string option in names)
+            {
+                Console.WriteLine(option);
+                Thread.Sleep(4);
+            }
+
+            while (true)
+            {
+                Highlight(prevN + 2, names[prevN], ConsoleColor.Black, ConsoleColor.White);
+                Highlight(n + 2, names[n]);
+
+                // Get user input:
+                ConsoleKey input = Console.ReadKey().Key;
+                prevN = n;
+                switch (input)
+                {
+                    case ConsoleKey.UpArrow: if (n > 0) n--; break;
+                    case ConsoleKey.DownArrow: if (n < names.Count - 1) n++; break;
+                    case ConsoleKey.LeftArrow: n = 0; break;
+                    case ConsoleKey.RightArrow: n = names.Count - 1; break;
+
+                    case ConsoleKey.Enter:
+                        Console.CursorVisible = true;
+                        return IDs[n];
+                }
+            }
         }
 
         public static List<LærerPar> GetPairs(string path)
@@ -127,14 +161,15 @@ namespace PseudoExcelReader
             List<bool> isText = new List<bool>();
             List<string> sharedStrings = new List<string>();
 
-            string sheetID = SelectSheet(archive);
+            string sheetID = SelectSheet(archive, "På hvilket ark ligger dataene?");
+            Console.Clear();
 
             foreach (ZipArchiveEntry entry in archive.Entries)
             {
-                StreamReader sr = new StreamReader(entry.Open());
-                XmlReader xr = XmlReader.Create(sr);
                 if (entry.FullName.Contains(sheetID))
                 {
+                    StreamReader sr = new StreamReader(entry.Open());
+                    XmlReader xr = XmlReader.Create(sr);
                     while (xr.Read())
                     {
                         string val = xr.Value;
@@ -146,18 +181,22 @@ namespace PseudoExcelReader
                             else isText.Add(false);
                         }
                     }
+                    xr.Close();
+                    sr.Close();
                 }
                 else if (entry.FullName.Contains("sharedStrings"))
                 {
+                    StreamReader sr = new StreamReader(entry.Open());
+                    XmlReader xr = XmlReader.Create(sr);
                     xr.MoveToContent();
                     while (xr.Read())
                     {
                         string val = xr.Value;
                         if (val != string.Empty) sharedStrings.Add(val);
                     }
+                    xr.Close();
+                    sr.Close();
                 }
-                xr.Close();
-                sr.Close();
             }
 
             List<LærerPar> lærerPar = new List<LærerPar>();

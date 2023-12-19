@@ -10,6 +10,7 @@ Console.ResetColor();
 int i;
 Dictionary<string, bool> tilgængeligeLærere = new Dictionary<string, bool>();
 List<LærerPar> pairs = Funcs.GetPairs(path);
+Console.WriteLine("Tænker...");
 List<Dictionary<LærerPar, bool>> plan = new List<Dictionary<LærerPar, bool>>();
 
 // Calculate available teachers:
@@ -99,5 +100,6 @@ foreach(LærerPar pair in pairs)
 
 File.WriteAllText(outPath, output);
 
+Console.Clear();
 Console.WriteLine("Tryk på en knap for at afslutte programmet");
 Console.ReadKey();
