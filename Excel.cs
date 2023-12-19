@@ -1,8 +1,11 @@
-﻿namespace PseudoExcelReader
+﻿using System.IO.Compression;
+using System.Xml;
+
+namespace PseudoExcelReader
 {
     public static class Funcs
     {
-        public static string SelectFile(string currentDir, string message, string fileType = ".txt")
+        public static string SelectFile(string currentDir, string message, string fileType = ".xlsx")
         {
             // Declare some variables to use later:
             List<string> previousDir = new List<string>();
@@ -88,18 +91,83 @@
             }
         }
 
+        public static string SelectSheet(ZipArchive archive)
+        {
+            string sheetID;
+            List<string> IDs = new List<string>();
+            List<string> names = new List<string>();
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                StreamReader sr = new StreamReader(entry.Open());
+                XmlReader xr = XmlReader.Create(sr);
+                if (entry.FullName.Contains("workbook"))
+                {
+                    while (xr.Read())
+                    {
+                        if (xr.Name))
+                        {
+                            raw.Add(res);
+                            if (xr.GetAttribute("t") != null) isText.Add(true);
+                            else isText.Add(false);
+                        }
+                    }
+                }
+            }
+
+            return sheetID;
+        }
+
         public static List<LærerPar> GetPairs(string path)
         {
-            List<LærerPar> lærerPar = new List<LærerPar> ();
-            lærerPar.Clear();
-            string content = File.ReadAllText(path);
-            List<string> rows = content.Split('\n').ToList<string>();
-            List<List<string>> cols = new List<List<string>>();
-            foreach (string row in rows)
+            FileStream zipArchive = new FileStream(path, FileMode.OpenOrCreate);
+            ZipArchive archive = new ZipArchive(zipArchive, ZipArchiveMode.Update);
+
+            List<int> raw = new List<int>();
+            List<bool> isText = new List<bool>();
+            List<string> sharedStrings = new List<string>();
+
+            string sheetID = SelectSheet(archive);
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
             {
-                string[] col = row.Split('\t');
-                lærerPar.Add(new LærerPar(Int32.Parse(col[2].Trim()), col[0], col[1]));
+                StreamReader sr = new StreamReader(entry.Open());
+                XmlReader xr = XmlReader.Create(sr);
+                if (entry.FullName.Contains(sheetID))
+                {
+                    while (xr.Read())
+                    {
+                        string val = xr.Value;
+                        int res;
+                        if (Int32.TryParse(val, out res))
+                        {
+                            raw.Add(res);
+                            if (xr.GetAttribute("t") != null) isText.Add(true);
+                            else isText.Add(false);
+                        }
+                    }
+                }
+                else if (entry.FullName.Contains("sharedStrings"))
+                {
+                    xr.MoveToContent();
+                    while (xr.Read())
+                    {
+                        string val = xr.Value;
+                        if (val != string.Empty) sharedStrings.Add(val);
+                    }
+                }
+                xr.Close();
+                sr.Close();
             }
+
+            List<LærerPar> lærerPar = new List<LærerPar>();
+
+            for (int i = 0; i < raw.Count; i += 3)
+            {
+                if (sharedStrings[raw[i]].Length < 5 && sharedStrings[raw[i + 1]].Length < 5)
+                    lærerPar.Add(new LærerPar(raw[i + 2], sharedStrings[raw[i]], sharedStrings[raw[i + 1]]));
+            }
+
             return lærerPar;
         }
 
