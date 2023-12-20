@@ -218,6 +218,11 @@ namespace PseudoExcelReader
             Console.Write(option);
             Console.ResetColor();
         }
+
+        public static void WriteToFile(List<Dictionary<LærerPar, bool>> plan, string path)
+        {
+
+        }
     }
 
     public class LærerPar
