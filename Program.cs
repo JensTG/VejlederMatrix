@@ -1,15 +1,19 @@
 ﻿// Avoid using COM dependencies (Not included in build!)
 using PseudoExcelReader;
+using System.IO.Compression;
+using System.Xml;
 
-// Find a .txt file:
+// Setup
 string path = Funcs.SelectFile("C:\\", "Vælg venligst tekst-filen (Brug piletasterne):");
-
-// -------------- The Program --------------
+FileStream zipArchive = new FileStream(path, FileMode.OpenOrCreate);
+ZipArchive archive = new ZipArchive(zipArchive, ZipArchiveMode.Update);
 Console.Clear();
 Console.ResetColor();
 int i;
+
+// -------------- The Program --------------
 Dictionary<string, bool> tilgængeligeLærere = new Dictionary<string, bool>();
-List<LærerPar> pairs = Funcs.GetPairs(path);
+List<LærerPar> pairs = Funcs.GetPairs(archive);
 Console.WriteLine("Tænker...");
 List<Dictionary<LærerPar, bool>> plan = new List<Dictionary<LærerPar, bool>>();
 
@@ -74,32 +78,11 @@ for (int blok = 0; !planlægning; blok++)
 }
 
 // Print the plan:
-string[] parts = path.Split('\\');
-string outPath = "";
-foreach(string part in parts)
-{
-    if(!part.Contains(".xlsx")) outPath += part + "\\";
-}
-
-DateTime dateMod = DateTime.Now;
-outPath += "Resultat - " + dateMod.Millisecond.ToString() + ".txt";
-
-string output = "";
-
-foreach(LærerPar pair in pairs)
-{
-    string row = pair.lærer1 + '\t' + pair.lærer2 + '\t';
-    for(i = 0; i < plan.Count; i++)
-    {
-        if (plan[i][pair]) row += "Optaget\t";
-        else row += "\t";
-    }
-    row += "\n";
-    output += row;
-}
-
-File.WriteAllText(outPath, output);
+List<List<string>> printPlan = Funcs.PlanToList(plan);
+Console.ReadKey();
 
 Console.Clear();
 Console.WriteLine("Tryk på en knap for at afslutte programmet");
 Console.ReadKey();
+
+// -------------- End Of Program --------------

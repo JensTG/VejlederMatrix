@@ -1,4 +1,6 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.Data.Common;
+using System.IO.Compression;
 using System.Xml;
 
 namespace PseudoExcelReader
@@ -17,7 +19,7 @@ namespace PseudoExcelReader
             bool newDir = true;
             while (true)
             {
-                if (newDir)                
+                if (newDir)
                 {
                     List<string> dirs = Directory.GetDirectories(currentDir).ToList();
                     List<string> files = Directory.GetFiles(currentDir).ToList();
@@ -43,7 +45,8 @@ namespace PseudoExcelReader
                         Console.WriteLine(option.Replace(currentDir, ""));
                         Thread.Sleep(4);
                     }
-                } else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
+                }
+                else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
                 newDir = false;
 
                 Highlight(n + 2, options[n].Replace(currentDir, ""));
@@ -58,9 +61,9 @@ namespace PseudoExcelReader
                     case ConsoleKey.LeftArrow: n = 0; break;
                     case ConsoleKey.RightArrow: n = options.Count - 1; break;
 
-                    case ConsoleKey.Enter: 
+                    case ConsoleKey.Enter:
                         string end = options[n].Substring(options[n].Length - fileType.Length);
-                        if(end == fileType)
+                        if (end == fileType)
                         {
                             path = options[n];
                             Console.CursorVisible = true;
@@ -152,11 +155,13 @@ namespace PseudoExcelReader
             }
         }
 
-        public static List<LærerPar> GetPairs(string path)
+        /// <summary>
+        /// Reads the data directly from the ZipArchive
+        /// </summary>
+        /// <param name="archive">The ZipArchive in which the data is located</param>
+        /// <returns>A List comprised of LærerPar</returns>
+        public static List<LærerPar> GetPairs(ZipArchive archive)
         {
-            FileStream zipArchive = new FileStream(path, FileMode.OpenOrCreate);
-            ZipArchive archive = new ZipArchive(zipArchive, ZipArchiveMode.Update);
-
             List<int> raw = new List<int>();
             List<bool> isText = new List<bool>();
             List<string> sharedStrings = new List<string>();
@@ -218,6 +223,107 @@ namespace PseudoExcelReader
             Console.Write(option);
             Console.ResetColor();
         }
+
+        public static List<List<string>> PlanToList(List<Dictionary<LærerPar, bool>> plan)
+        {
+            List<List<string>> newPlan = new List<List<string>>();
+            List<LærerPar> pairs = plan[0].Keys.ToList();
+
+            for (int i = 0; i < plan[0].Count; i++) newPlan.Add(new List<string>());
+            foreach (List<string> row in newPlan)
+            {
+                int index = newPlan.IndexOf(row);
+                row.AddRange(new List<string> { pairs[index].lærer1, pairs[index].lærer2 });
+                for (int i = 0; i < plan.Count; i++)
+                {
+                    if (plan[i][pairs[index]]) row.Add("Optaget");
+                    else row.Add("");
+                }
+            }
+
+            return newPlan;
+        }
+    }
+    public static class XmlFuncs
+    {
+        public static string XmlString(string name, Dictionary<string, string> atts, string value)
+        {
+            string output = $"<{name} ";
+            foreach (KeyValuePair<string, string> att in atts)
+            {
+                output += $"{att.Key}=\"{att.Value}\" ";
+            }
+            output.Remove(output.Count() - 1);
+            output += $">{value}</{name}>";
+            return output;
+        }
+        public static string XmlString(string name, Dictionary<string, string> atts)
+        {
+            string output = $"<{name} ";
+            foreach (KeyValuePair<string, string> att in atts)
+            {
+                output += $"{att.Key}=\"{att.Value}\" ";
+            }
+            output.Remove(output.Count() - 1);
+            output += $"/>";
+            return output;
+        }
+        public static string XmlString(string name, string value)
+        {
+            string output = $"<{name}>{value}</{name}>";
+            return output;
+        }
+        public static string XmlString(string name, List<string> vals)
+        {
+            string output = $"<{name}>";
+            foreach (string val in vals)
+            {
+                output += val;
+            }
+            output += $"</{name}>";
+            return output;
+        }
+        public static string XmlString(string name, Dictionary<string, string> atts, List<string> vals)
+        {
+            string output = $"<{name} ";
+            foreach (KeyValuePair<string, string> att in atts)
+            {
+                output += $"{att.Key}=\"{att.Value}\" ";
+            }
+            output.Remove(output.Count() - 1);
+            output += ">";
+            foreach (string val in vals)
+            {
+                output += val;
+            }
+            output += $"</{name}>";
+            return output;
+        }
+
+        public static XmlElement AddSheet(string content, XmlDocument doc)
+        {
+            // Create a new book element.
+            XmlElement sheet = doc.CreateElement("sheet");
+
+            int sheetN = 3;
+
+            // Create attributes for book and append them to the book element.
+            XmlAttribute name = doc.CreateAttribute("name");
+            XmlAttribute ID = doc.CreateAttribute("sheetId");
+            XmlAttribute id = doc.CreateAttribute("r", "id", null);
+
+            name.Value = "Resultat";
+            ID.Value = sheetN.ToString();
+            id.Value = "rId" + sheetN.ToString();
+
+            sheet.Attributes.Append(name);
+            sheet.Attributes.Append(ID);
+            sheet.Attributes.Append(id);
+
+            sheet.InnerXml = content;
+
+            return sheet;
+        }
     }
 
     public class LærerPar
@@ -232,6 +338,6 @@ namespace PseudoExcelReader
             this.lærer2 = lærer2;
         }
         public LærerPar() { }
-        
+
     }
 }
