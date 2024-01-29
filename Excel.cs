@@ -14,7 +14,7 @@
             bool newDir = true;
             while (true)
             {
-                if (newDir)                
+                if (newDir)
                 {
                     List<string> dirs = Directory.GetDirectories(currentDir).ToList();
                     List<string> files = Directory.GetFiles(currentDir).ToList();
@@ -40,7 +40,8 @@
                         Console.WriteLine(option.Replace(currentDir, ""));
                         Thread.Sleep(4);
                     }
-                } else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
+                }
+                else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
                 newDir = false;
 
                 Highlight(n + 2, options[n].Replace(currentDir, ""));
@@ -55,9 +56,9 @@
                     case ConsoleKey.LeftArrow: n = 0; break;
                     case ConsoleKey.RightArrow: n = options.Count - 1; break;
 
-                    case ConsoleKey.Enter: 
+                    case ConsoleKey.Enter:
                         string end = options[n].Substring(options[n].Length - fileType.Length);
-                        if(end == fileType)
+                        if (end == fileType)
                         {
                             path = options[n];
                             Console.CursorVisible = true;
@@ -94,7 +95,7 @@
             lærerPar.Clear();
             string content = File.ReadAllText(path);
             List<string> rows = content.Split('\n').ToList<string>();
-            List<List<string>> cols = new List<List<string>>();
+            rows.RemoveAt(rows.Count - 1);
             foreach (string row in rows)
             {
                 string[] col = row.Split('\t');
