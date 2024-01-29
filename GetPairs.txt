@@ -1,0 +1,13 @@
+ public static List<LærerPar> GetPairs(string path)
+        {
+            List<LærerPar> lærerPar = new List<LærerPar> ();
+            string content = File.ReadAllText(path);
+            List<string> rows = content.Split('\n').ToList<string>();
+            List<List<string>> cols = new List<List<string>>();
+            foreach (string row in rows)
+            {
+                string[] col = row.Split('\t');
+                lærerPar.Add(new LærerPar(Int32.Parse(col[2].Trim()), col[0], col[1]));
+            }
+            return lærerPar;
+        }
