@@ -1,4 +1,9 @@
-﻿namespace PseudoExcelReader
+﻿using System.IO;
+using System.Collections.Generic;
+using System;
+using System.Threading;
+
+namespace PseudoExcelReader
 {
     public static class Funcs
     {
@@ -16,8 +21,18 @@
             {
                 if (newDir)
                 {
-                    List<string> dirs = Directory.GetDirectories(currentDir).ToList();
-                    List<string> files = Directory.GetFiles(currentDir).ToList();
+                    string[] fileArray = Directory.GetFiles(currentDir);
+                    string[] dirsArray = Directory.GetDirectories(currentDir);
+                    List<string> dirs = new List<string>();
+                    foreach (string dir in dirsArray)
+                    {
+                        dirs.Add(dir);
+                    }
+                    List<string> files = new List<string>();
+                    foreach(string file in fileArray)
+                    {
+                        files.Add(file);
+                    }
                     List<string> remove = new List<string>();
                     foreach (string file in files)
                     {
@@ -66,7 +81,7 @@
                         }
                         else
                         {
-                            if (!options[n].Contains('.'))
+                            if (!options[n].Contains("."))
                             {
                                 previousDir.Add(currentDir);
                                 currentDir = options[n];
@@ -79,7 +94,7 @@
                     case ConsoleKey.Escape:
                         if (previousDir.Count > 0)
                         {
-                            currentDir = previousDir.Last();
+                            currentDir = previousDir[previousDir.Count - 1];
                             previousDir.RemoveAt(previousDir.Count - 1);
                             n = 0;
                             newDir = true;
@@ -91,10 +106,15 @@
 
         public static List<LærerPar> GetPairs(string path)
         {
-            List<LærerPar> lærerPar = new List<LærerPar> ();
+            List<LærerPar> lærerPar = new List<LærerPar>();
             lærerPar.Clear();
             string content = File.ReadAllText(path);
-            List<string> rows = content.Split('\n').ToList<string>();
+            string[] rowsArray = content.Split('\n');
+            List<string> rows = new List<string>();
+            foreach(string row in rowsArray)
+            {
+                rows.Add(row);
+            }
             rows.RemoveAt(rows.Count - 1);
             foreach (string row in rows)
             {
@@ -126,6 +146,6 @@
             this.lærer2 = lærer2;
         }
         public LærerPar() { }
-        
+
     }
 }

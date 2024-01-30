@@ -1,5 +1,8 @@
 ﻿// Avoid using COM dependencies (Not included in build!)
 using PseudoExcelReader;
+using System;
+using System.IO;
+using System.Collections.Generic;
 
 // Find a .txt file:
 string path = Funcs.SelectFile("C:\\", "Vælg venligst tekst-filen (Brug piletasterne):");
