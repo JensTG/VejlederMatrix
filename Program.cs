@@ -81,7 +81,7 @@ string[] parts = path.Split('\\');
 string outPath = "";
 foreach(string part in parts)
 {
-    if(!part.Contains(".xlsx")) outPath += part + "\\";
+    if(!part.Contains(".txt")) outPath += part + "\\";
 }
 
 DateTime dateMod = DateTime.Now;

@@ -110,11 +110,7 @@ namespace PseudoExcelReader
             lærerPar.Clear();
             string content = File.ReadAllText(path);
             string[] rowsArray = content.Split('\n');
-            List<string> rows = new List<string>();
-            foreach(string row in rowsArray)
-            {
-                rows.Add(row);
-            }
+            List<string> rows = [.. rowsArray];
             rows.RemoveAt(rows.Count - 1);
             foreach (string row in rows)
             {
