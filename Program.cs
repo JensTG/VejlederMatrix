@@ -8,8 +8,9 @@ using System.Collections.Generic;
 string path = Funcs.SelectFile("C:\\", "Vælg venligst tekst-filen (Brug piletasterne):");
 
 // -------------- The Program --------------
-Console.Clear();
+Console.CursorVisible = false;
 Console.ResetColor();
+Console.Clear();
 int i;
 Dictionary<string, bool> tilgængeligeLærere = new Dictionary<string, bool>();
 List<LærerPar> pairs = Funcs.GetPairs(path);

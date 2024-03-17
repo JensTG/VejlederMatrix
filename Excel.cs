@@ -9,71 +9,67 @@ namespace PseudoExcelReader
     {
         public static string SelectFile(string currentDir, string message, string fileType = ".txt")
         {
-            // Declare some variables to use later:
+            Console.CursorVisible = false;
+            int firstOption = 0;
             List<string> previousDir = new List<string>();
             List<string> options = new List<string>();
-            int n = 0;      // Will keep track of the selected option
-            int prevN = 0;  // And will be used to erase highlights
-            string path;    // The final result
-            Console.CursorVisible = false;
             bool newDir = true;
+            bool newBounds = true;
+            string path = "";
+            int n = 0;
+
             while (true)
             {
+                int visibleCount = Console.WindowHeight - 3;
                 if (newDir)
                 {
-                    string[] fileArray = Directory.GetFiles(currentDir);
-                    string[] dirsArray = Directory.GetDirectories(currentDir);
-                    List<string> dirs = new List<string>();
-                    foreach (string dir in dirsArray)
-                    {
-                        dirs.Add(dir);
-                    }
-                    List<string> files = new List<string>();
-                    foreach(string file in fileArray)
-                    {
-                        files.Add(file);
-                    }
-                    List<string> remove = new List<string>();
-                    foreach (string file in files)
-                    {
-                        if (!file.Contains(fileType)) remove.Add(file);
-                    }
-                    foreach (string item in remove)
-                    {
-                        files.Remove(item);
-                    }
-                    options.Clear();
-                    options.AddRange(dirs.ToArray());
-                    options.AddRange(files.ToArray());
-
-                    // Write options to the console:
-                    Console.Clear();
-                    Console.SetCursorPosition(1, 0);
-                    Console.WriteLine(message + "\n");
-                    foreach (string option in options)
-                    {
-                        Console.WriteLine(option.Replace(currentDir, ""));
-                        Thread.Sleep(4);
-                    }
+                    string[] files = Directory.GetFiles(currentDir);
+                    options = [.. Directory.GetDirectories(currentDir)];
+                    options.AddRange(from file in files where file.Contains(fileType) select file);
+                    firstOption = 0;
                 }
-                else Highlight(prevN + 2, options[prevN].Replace(currentDir, ""), ConsoleColor.Black, ConsoleColor.White);
+
+                if (newBounds || newDir)
+                {
+                    Console.Clear();
+                    Console.WriteLine(message);
+                    Console.SetCursorPosition(0, 2);
+                    for (int i = 0; i < visibleCount && i + firstOption < options.Count; i++)
+                        Console.WriteLine("  " + options[i + firstOption].Replace(currentDir, ""));
+                }
+
+                Console.SetCursorPosition(0, n - firstOption + 2);
+                Console.Write('>');
+                Console.SetCursorPosition(0, n - firstOption + 3);
+                Console.Write(' ');
+                Console.SetCursorPosition(0, n - firstOption + 1);
+                Console.Write(' ');
+
                 newDir = false;
-
-                Highlight(n + 2, options[n].Replace(currentDir, ""));
-
+                newBounds = false;
                 // Get user input:
                 ConsoleKey input = Console.ReadKey().Key;
-                prevN = n;
                 switch (input)
                 {
-                    case ConsoleKey.UpArrow: if (n > 0) n--; break;
-                    case ConsoleKey.DownArrow: if (n < options.Count - 1) n++; break;
-                    case ConsoleKey.LeftArrow: n = 0; break;
-                    case ConsoleKey.RightArrow: n = options.Count - 1; break;
+                    case ConsoleKey.UpArrow: 
+                        if (n > 0) n--;
+                        break;
+                    case ConsoleKey.DownArrow: 
+                        if (n < options.Count - 1) n++;
+                        break;
+                    case ConsoleKey.LeftArrow: 
+                        n = 0; 
+                        firstOption = 0; 
+                        newBounds = true; 
+                        break;
+                    case ConsoleKey.RightArrow: 
+                        n = options.Count - 1;
+                        firstOption = Math.Max(options.Count - visibleCount, 0); 
+                        newBounds = true; 
+                        break;
 
                     case ConsoleKey.Enter:
-                        string end = options[n].Substring(options[n].Length - fileType.Length);
-                        if (end == fileType)
+                        if (options[n].Substring(options[n].Length - fileType.Length) == fileType)
                         {
                             path = options[n];
                             Console.CursorVisible = true;
@@ -101,9 +97,10 @@ namespace PseudoExcelReader
                         }
                         break;
                 }
+                if (n - firstOption >= visibleCount) { firstOption++; newBounds = true; }
+                else if (n - firstOption < 0) { firstOption--; newBounds = true; }
             }
         }
-
         public static List<LærerPar> GetPairs(string path)
         {
             List<LærerPar> lærerPar = new List<LærerPar>();
@@ -111,25 +108,15 @@ namespace PseudoExcelReader
             string content = File.ReadAllText(path);
             string[] rowsArray = content.Split('\n');
             List<string> rows = [.. rowsArray];
-            rows.RemoveAt(rows.Count - 1);
             foreach (string row in rows)
             {
+                if (row.Length < 5) continue;
                 string[] col = row.Split('\t');
                 lærerPar.Add(new LærerPar(Int32.Parse(col[2].Trim()), col[0], col[1]));
             }
             return lærerPar;
         }
-
-        public static void Highlight(int line, string option, ConsoleColor hColor = ConsoleColor.White, ConsoleColor tColor = ConsoleColor.Black)
-        {
-            Console.BackgroundColor = hColor;
-            Console.ForegroundColor = tColor;
-            Console.SetCursorPosition(0, line);
-            Console.Write(option);
-            Console.ResetColor();
-        }
     }
-
     public class LærerPar
     {
         public int møder;
@@ -141,7 +128,5 @@ namespace PseudoExcelReader
             this.lærer1 = lærer1;
             this.lærer2 = lærer2;
         }
-        public LærerPar() { }
-
     }
 }
